@@ -46,7 +46,46 @@ public class CardOrderFormTest {
         elements.get(1).sendKeys("+79998887766");
         driver.findElement(By.className("checkbox__box")).click();
         driver.findElement(By.className("button")).click();
+
         String text = driver.findElement(By.className("paragraph_theme_alfa-on-white")).getText();
         assertEquals("Ваша заявка успешно отправлена! Наш менеджер свяжется с вами в ближайшее время.", text.trim());
+
+    }
+
+    @Test
+    void shouldNotSendCardOrderFormWithInvalidName() {
+        List<WebElement> elements = driver.findElements(By.className("input__control"));
+        elements.get(0).sendKeys("Ekaterina Kim");
+        elements.get(1).sendKeys("+79997774411");
+        driver.findElement(By.className("checkbox__box")).click();
+        driver.findElement(By.className("button")).click();
+
+        String actualText = driver.findElement(By.className("input__sub")).getText();
+        String expectedText = "Имя и Фамилия указаные неверно. Допустимы только русские буквы, пробелы и дефисы.";
+        assertEquals(expectedText, actualText.trim());
+    }
+
+    @Test
+    void shouldNotSendCardOrderFormWithInvalidNumber() {
+        List<WebElement> elements = driver.findElements(By.className("input__control"));
+        elements.get(0).sendKeys("Екатерина Ким");
+        elements.get(1).sendKeys("89997774411");
+        driver.findElement(By.className("checkbox__box")).click();
+        driver.findElement(By.className("button")).click();
+
+        String actualText = driver.findElement(By.cssSelector("[data-test-id='phone'] .input__sub")).getText();
+        String expectedText = "Телефон указан неверно. Должно быть 11 цифр, например, +79012345678.";
+        assertEquals(expectedText, actualText.trim());
+    }
+
+    @Test
+    void shouldClickCheckbox() {
+        WebElement checkbox = driver.findElement(By.cssSelector("[data-test-id='agreement']"));
+        if (!checkbox.isSelected()) {
+            checkbox.click();
+        }
+        boolean expected = true;
+        boolean actual = checkbox.isEnabled();
+        assertEquals(expected, actual);
     }
 }
