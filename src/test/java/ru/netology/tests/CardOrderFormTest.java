@@ -1,10 +1,7 @@
 package ru.netology.tests;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -41,51 +38,62 @@ public class CardOrderFormTest {
 
     @Test
     void shouldSendCardOrderForm() {
-        List<WebElement> elements = driver.findElements(By.className("input__control"));
-        elements.get(0).sendKeys("Екатерина");
-        elements.get(1).sendKeys("+79998887766");
-        driver.findElement(By.className("checkbox__box")).click();
-        driver.findElement(By.className("button")).click();
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Мария Петрова - Иванова");
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79998887744");
+        driver.findElement(By.cssSelector("[data-test-id=agreement] span.checkbox__box")).click();
+        driver.findElement(By.cssSelector(".form-field button")).click();
 
-        String text = driver.findElement(By.className("paragraph_theme_alfa-on-white")).getText();
+        String text = driver.findElement(By.cssSelector("[data-test-id='order-success']")).getText();
         assertEquals("Ваша заявка успешно отправлена! Наш менеджер свяжется с вами в ближайшее время.", text.trim());
+    }
 
+    @Test
+    void shouldNotSendCardOrderFormWithEmptyFields() {
+        driver.findElement(By.cssSelector(".form-field button")).click();
+
+        String actual = driver.findElement(By.cssSelector("[data-test-id=name].input_invalid .input__sub")).getText();
+        Assertions.assertEquals("Поле обязательно для заполнения", actual.trim());
+    }
+
+    @Test
+    void shouldNotSendCardOrderFormWithEmptyFieldPhone() {
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Мария Петрова");
+        driver.findElement(By.cssSelector("[data-test-id='agreement'] span.checkbox__box")).click();
+        driver.findElement(By.cssSelector(".form-field button")).click();
+
+        String actual = driver.findElement(By.cssSelector("[data-test-id=phone].input_invalid .input__sub")).getText();
+        Assertions.assertEquals("Поле обязательно для заполнения", actual.trim());
+    }
+
+    @Test
+    void shouldNotSendCardOrderFormWithNotActiveCheckbox() {
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Мария Петрова");
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79998887744");
+        driver.findElement(By.cssSelector(".form-field button")).click();
+        driver.findElement(By.cssSelector("[data-test-id=agreement].input_invalid")).isDisplayed();
     }
 
     @Test
     void shouldNotSendCardOrderFormWithInvalidName() {
-        List<WebElement> elements = driver.findElements(By.className("input__control"));
-        elements.get(0).sendKeys("Ekaterina Kim");
-        elements.get(1).sendKeys("+79997774411");
-        driver.findElement(By.className("checkbox__box")).click();
-        driver.findElement(By.className("button")).click();
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Ekaterina Kim");
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("+79998887744");
+        driver.findElement(By.cssSelector("[data-test-id='agreement'] span.checkbox__box")).click();
+        driver.findElement(By.cssSelector(".form-field button")).click();
 
-        String actualText = driver.findElement(By.className("input__sub")).getText();
+        String actualText = driver.findElement(By.cssSelector("[data-test-id=name].input_invalid .input__sub")).getText();
         String expectedText = "Имя и Фамилия указаные неверно. Допустимы только русские буквы, пробелы и дефисы.";
         assertEquals(expectedText, actualText.trim());
     }
 
     @Test
     void shouldNotSendCardOrderFormWithInvalidNumber() {
-        List<WebElement> elements = driver.findElements(By.className("input__control"));
-        elements.get(0).sendKeys("Екатерина Ким");
-        elements.get(1).sendKeys("89997774411");
-        driver.findElement(By.className("checkbox__box")).click();
-        driver.findElement(By.className("button")).click();
+        driver.findElement(By.cssSelector("[data-test-id='name'] input")).sendKeys("Екатерина Ким");
+        driver.findElement(By.cssSelector("[data-test-id='phone'] input")).sendKeys("89998887744");
+        driver.findElement(By.cssSelector("[data-test-id='agreement'] span.checkbox__box")).click();
+        driver.findElement(By.cssSelector(".form-field button")).click();
 
         String actualText = driver.findElement(By.cssSelector("[data-test-id='phone'] .input__sub")).getText();
         String expectedText = "Телефон указан неверно. Должно быть 11 цифр, например, +79012345678.";
         assertEquals(expectedText, actualText.trim());
-    }
-
-    @Test
-    void shouldClickCheckbox() {
-        WebElement checkbox = driver.findElement(By.cssSelector("[data-test-id='agreement']"));
-        if (!checkbox.isSelected()) {
-            checkbox.click();
-        }
-        boolean expected = true;
-        boolean actual = checkbox.isEnabled();
-        assertEquals(expected, actual);
     }
 }
